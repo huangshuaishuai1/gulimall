@@ -3,6 +3,7 @@ package com.hss.gulimallmember.controller;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.hss.gulimallmember.feign.CouponFeignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,9 +31,18 @@ public class MemberController {
     @Autowired
     private MemberService memberService;
 
+    @Autowired
+    private CouponFeignService couponFeignService;
     /**
      * 列表
      */
+    @RequestMapping("/coupons")
+    public R test() {
+        MemberEntity memberEntity = new MemberEntity();
+        memberEntity.setNickname("张三");
+        return R.ok().put("member",memberEntity).put("coupons",couponFeignService.getCoupons().get("coupons"));
+    }
+
     @RequestMapping("/list")
     public R list(@RequestParam Map<String, Object> params){
         PageUtils page = memberService.queryPage(params);
