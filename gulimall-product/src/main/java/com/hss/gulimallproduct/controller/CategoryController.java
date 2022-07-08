@@ -50,7 +50,7 @@ public class CategoryController {
 
 		CategoryEntity category = categoryService.getById(catId);
 
-        return R.ok().put("category", category);
+        return R.ok().put("data", category);
     }
 
     /**
@@ -63,6 +63,13 @@ public class CategoryController {
         return R.ok();
     }
 
+
+    @RequestMapping("/update/sort")
+    public R update(@RequestBody CategoryEntity[] category){
+        categoryService.updateBatchById(Arrays.asList(category));
+
+        return R.ok();
+    }
     /**
      * 修改
      */
@@ -84,5 +91,7 @@ public class CategoryController {
         categoryService.removeMenuByIds(Arrays.asList(catIds));
         return R.ok();
     }
+
+
 
 }
