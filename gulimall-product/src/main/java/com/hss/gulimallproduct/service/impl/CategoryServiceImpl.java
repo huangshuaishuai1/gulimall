@@ -1,8 +1,12 @@
 package com.hss.gulimallproduct.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.hss.gulimallproduct.entity.CategoryBrandRelationEntity;
+import com.hss.gulimallproduct.service.CategoryBrandRelationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -16,6 +20,7 @@ import com.hss.common.utils.Query;
 import com.hss.gulimallproduct.dao.CategoryDao;
 import com.hss.gulimallproduct.entity.CategoryEntity;
 import com.hss.gulimallproduct.service.CategoryService;
+import org.springframework.util.StringUtils;
 
 
 @Service("categoryService")
@@ -23,6 +28,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
 //    @Autowired
 //    CategoryDao categoryDao;
+
+    @Autowired
+    CategoryBrandRelationService categoryBrandRelationService;
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<CategoryEntity> page = this.page(
@@ -56,7 +64,33 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         baseMapper.deleteBatchIds(asList);
     }
 
-    //递归查找所有菜单的子菜单
+    @Override
+    public Long[] getCatelogPath(Long catelogId) {
+        ArrayList<Long> paths = new ArrayList<Long>();
+        findParentPath(catelogId, paths);
+        Long[] ret = paths.toArray(new Long[0]);
+        return ret;
+
+    }
+
+    @Override
+    public void updateWithAll(CategoryEntity category) {
+        this.updateById(category);
+        String name = category.getName();
+        if (!StringUtils.isEmpty(name)){
+            categoryBrandRelationService.updateCategoryBrandRelationFromCategory(category.getCatId(),name);
+        }
+    }
+
+    private void findParentPath(Long catelogId,ArrayList<Long> paths) {
+        paths.add(0,catelogId);
+        CategoryEntity byId = this.getById(catelogId);
+        if (byId.getParentCid()!=0) {
+            findParentPath(byId.getParentCid(),paths);
+
+        }
+    }
+     //递归查找所有菜单的子菜单
     private List<CategoryEntity> getChildren(CategoryEntity root,List<CategoryEntity> all) {
         List<CategoryEntity> children = all.stream().filter(categoryEntity -> {
             return categoryEntity.getParentCid().equals(root.getCatId());
